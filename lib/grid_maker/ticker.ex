@@ -1,6 +1,6 @@
 defmodule GridMaker.Ticker do
   use GenServer
-  @refresh_interval 200
+  @refresh_interval 1000
 
   def start_link(%{market: market}) do
     state = %{market: market, refresh_interval: @refresh_interval}
@@ -18,7 +18,7 @@ defmodule GridMaker.Ticker do
   defp refresh_ticker(state = %{market: market, refresh_interval: refresh_interval}) do
     :erlang.start_timer(refresh_interval, self(), :refresh_ticker)
 
-    #PeatioClient.ticker(market) |> GridMaker.Worker.tick
+    PeatioClient.ticker(market) |> GridMaker.Worker.tick
     {:noreply, state}
   end
 end

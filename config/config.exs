@@ -5,13 +5,15 @@ use Mix.Config
 config :peatio_client, host: "https://stg.yunbi.com"
 
 config :grid_maker, grid: %{
-  market: "ethcny", 
-  min: 3, 
-  max: 15, 
-  unit: 5, 
-  unit_vol: 55, 
-  point: 0.04
+  volume: 55,
+  scope: 200,
+  unit: 0.04,
+  price: 6.00,
+  group_size: 5,
+  market: "ethcny"
 }
+
+config :logger, level: :info
 
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this
