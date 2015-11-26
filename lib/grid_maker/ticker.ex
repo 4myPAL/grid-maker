@@ -18,8 +18,6 @@ defmodule GridMaker.Ticker do
   end
 
   defp refresh_ticker(state = %{market: market, refresh_interval: refresh_interval}) do
-    :erlang.start_timer(refresh_interval, self(), :refresh_ticker)
-
     PeatioClient.ticker(market) |> GridMaker.Worker.tick
     {:noreply, state}
   end

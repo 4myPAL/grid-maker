@@ -5,8 +5,8 @@ use Mix.Config
 config :peatio_client, host: "https://stg.yunbi.com"
 
 config :grid_maker, grid: %{
-  volume: 55,
-  scope: 200,
+  volume: 5,
+  scope: 30,
   unit: 0.04,
   price: 6.00,
   unit_size: 5,

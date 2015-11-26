@@ -16,44 +16,40 @@ defmodule GridMaker.Volume do
     GenServer.start_link(__MODULE__, config, [name: __MODULE__])
   end
 
+  # UNIT <- CELL <- GRID
   def init(config = %{scope: scope, unit_size: unit_size, volume: volume}) do
     cell_size = div(scope, unit_size)
     volumes = for _ <- 1..cell_size, do: generate(volume, unit_size)
-    {:ok, {volumes, config}}
+    {:ok, %{volumes: volumes, config: config}}
   end
 
-  def handle_call(:all, _, state = {volumes, _}) do
+  def handle_call(:all, _, state = %{volumes: volumes}) do
     {:reply, volumes, state}
   end
 
-  def handle_call({:fetch, scope}, _, {volumes, config = %{unit_size: unit_size}}) do
-    true = Range.range? scope
-
-    first_index   = get_upper_with_unit_size(scope.first, unit_size) |> div(unit_size) |> - 1
-    replace_count = get_lower_with_unit_size(scope.last,  unit_size) |> div(unit_size) |> - first_index
-
-    volumes = update(first_index, replace_count, volumes, config)
-    result = volumes |> List.flatten |> Enum.slice Range.new(scope.first - 1, scope.last - 1)
-
-    {:reply, result, {volumes, config}}
+  def handle_call({:fetch, range}, _, state = %{volumes: volumes, config: config}) do
+    volumes = volumes |> refresh_volumes(range, config)
+    range_volumes = volumes |> List.flatten |> Enum.slice(range)
+    {:reply, range_volumes, %{state | volumes: volumes}}
   end
 
-  defp update(_index, count, volumes, _config) when count < 1 do
-    volumes
+  defp refresh_volumes(volumes, range, %{volume: volume, unit_size: size}) do
+    left = index_for_cell(range.first - 1, size) + 1
+    right = index_for_cell(range.last + 1, size)
+    
+    case right - left do
+      lenth when lenth > 0 ->
+        n = for _ <- 1..lenth, do: generate(volume, size)
+        {l, _} = Enum.split(volumes, left)
+        {_, r} = Enum.split(volumes, right)
+        l ++ n ++ r
+      _ ->
+        volumes
+    end
   end
 
-  defp update(index, count, volumes, config = %{unit_size: unit_size, volume: volume}) do
-    volumes = List.update_at volumes, index, fn(_) -> generate(volume, unit_size) end
-    update(index + 1, count - 1, volumes, config)
-  end
-
-  defp get_lower_with_unit_size(number, unit_size) do
-    number - rem(number, unit_size)
-  end
-
-  defp get_upper_with_unit_size(number, unit_size) do
-    get_lower_with_unit_size(number, unit_size) + unit_size
-  end
+  defp index_for_cell(index, _size) when index <= 0 do -1 end
+  defp index_for_cell(index, size) do (index - rem(index, size)) |> div(size) end
 
   @doc ~S"""
   Generate `unit_size` length and avg is `unit_volume` list.
