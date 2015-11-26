@@ -7,6 +7,10 @@ defmodule GridMaker.Volume do
   def fetch(scope) do
     GenServer.call(__MODULE__, {:fetch, scope})
   end
+
+  def all do
+    GenServer.call(__MODULE__, :all)
+  end
   
   def start_link(config) do
     GenServer.start_link(__MODULE__, config, [name: __MODULE__])
@@ -16,6 +20,10 @@ defmodule GridMaker.Volume do
     cell_size = div(scope, unit_size)
     volumes = for _ <- 1..cell_size, do: generate(volume, unit_size)
     {:ok, {volumes, config}}
+  end
+
+  def handle_call(:all, _, state = {volumes, _}) do
+    {:reply, volumes, state}
   end
 
   def handle_call({:fetch, scope}, _, {volumes, config = %{unit_size: unit_size}}) do

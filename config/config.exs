@@ -15,6 +15,9 @@ config :grid_maker, grid: %{
 
 config :logger, level: :info
 
+config :grid_maker, key: "RKTCMD1kxoRLpf2ySGspROoRo9mj8wTauSxViZM2"
+config :grid_maker, secret: "cxQUmvxXPKW7KwB5J2X4fqC4iEZfCYTTCfR7stQQ"
+
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this
 # file won't be loaded nor affect the parent project. For this reason,

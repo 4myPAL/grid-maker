@@ -1,3 +1,5 @@
+require Logger
+
 defmodule GridMaker.Ticker do
   use GenServer
   @refresh_interval 1000
