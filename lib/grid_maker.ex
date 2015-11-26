@@ -21,14 +21,13 @@ defmodule GridMaker do
     unit       = D.new(config.unit)
     price      = D.new(config.price)
     volume     = D.new(config.volume)
-    group_size = D.new(config.group_size)
     
     side_price_scope = unit |> D.mult D.new(config.scope) |> D.div D.new(2)
 
     max = price |> D.add side_price_scope
     min = price |> D.sub side_price_scope
 
-    %{config | unit: unit, price: price, volume: volume, group_size: group_size}
+    %{config | unit: unit, price: price, volume: volume}
     |> Dict.put(:min, min)
     |> Dict.put(:max, max)
   end

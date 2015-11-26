@@ -9,7 +9,6 @@ defmodule GridMaker.Worker do
   end
   
   def start_link(config) do
-    Logger.info "#{inspect config}"
     GenServer.start_link(__MODULE__, config, [name: __MODULE__])
   end
 

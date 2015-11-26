@@ -9,7 +9,7 @@ config :grid_maker, grid: %{
   scope: 200,
   unit: 0.04,
   price: 6.00,
-  group_size: 5,
+  unit_size: 5,
   market: "ethcny"
 }
 
