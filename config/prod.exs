@@ -1,3 +1,5 @@
+use Mix.Config
+
 config :peatio_client, host: "HOST"
 
 config :grid_maker, grid: %{

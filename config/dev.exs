@@ -1,3 +1,5 @@
+use Mix.Config
+
 config :peatio_client, host: "https://stg.yunbi.com"
 
 config :grid_maker, grid: %{
