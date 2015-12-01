@@ -29,7 +29,8 @@ defmodule GridMaker.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:peatio_client, "1.2.2"}
+      {:exrm, "~> 1.0.0-rc6"},
+      {:peatio_client, "1.2.3"}
     ]
   end
 end
