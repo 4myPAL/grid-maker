@@ -80,6 +80,10 @@ defmodule GridMaker.Worker do
     end
   end
 
+  def handle_cast({:tick, _}, config) do
+    {:noreply, config}
+  end
+
   def handle_info(:timeout, config) do
     trades = PeatioClient.trades(config.market, config.last.id)
     support = find_support(trades, config)
