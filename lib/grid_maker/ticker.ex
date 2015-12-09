@@ -19,6 +19,6 @@ defmodule GridMaker.Ticker do
 
   defp refresh_ticker(state = %{market: market, refresh_interval: refresh_interval}) do
     PeatioClient.ticker(market) |> GridMaker.Worker.tick
-    {:noreply, state, 1000}
+    {:noreply, state}
   end
 end

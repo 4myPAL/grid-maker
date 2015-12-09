@@ -16,7 +16,7 @@ defmodule GridMaker do
       worker(GridMaker.Worker, [config])
     ]
 
-    opts = [strategy: :one_for_one, name: GridMaker.Supervisor]
+    opts = [strategy: :one_for_all, name: GridMaker.Supervisor]
     Supervisor.start_link(children, opts)
   end
 
