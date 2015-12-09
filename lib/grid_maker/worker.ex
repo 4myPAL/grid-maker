@@ -121,11 +121,6 @@ defmodule GridMaker.Worker do
     end
   end
 
-  def terminate(_, _) do
-    PeatioClient.cancel_all @api
-    {:shutdown, :ok}
-  end
-
   defp preprocess(ticker, config) do
     side_price_scope = config.unit |> D.mult(D.new(config.scope) |> D.div D.new(2))
 
