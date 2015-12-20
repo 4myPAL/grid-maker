@@ -3,7 +3,7 @@ defmodule GridMaker.Mixfile do
 
   def project do
     [app: :grid_maker,
-     version: "0.0.2",
+     version: "0.0.3",
      elixir: "~> 1.1",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
@@ -30,7 +30,7 @@ defmodule GridMaker.Mixfile do
   defp deps do
     [
       {:exrm, "~> 1.0.0-rc6"},
-      {:peatio_client, "1.2.3"}
+      {:peatio_client, "1.2.4"}
     ]
   end
 end
