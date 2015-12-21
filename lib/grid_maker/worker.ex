@@ -189,14 +189,26 @@ defmodule GridMaker.Worker do
     {D.to_string(p), D.to_string(v)}
   end
 
-  defp ask(_, []) do [] end
-  defp ask(%{market: market}, orders) do
-    PeatioClient.ask(@api, market, orders)
+  defp ask(market, orders) do
+    ask(market, orders, [])
   end
 
-  defp bid(_, []) do [] end
-  defp bid(%{market: market}, orders) do
-    PeatioClient.bid(@api, market, orders)
+  defp ask(_, [], acc) do acc end
+  defp ask(%{market: market}, orders, acc) do
+    {h, t} = Enum.split(orders, 100)
+    acc = acc ++ PeatioClient.ask(@api, market, orders)
+    ask(%{market: market}, t, acc)
+  end
+
+  defp bid(market, orders) do
+    bid(market, orders, [])
+  end
+
+  defp bid(_, [], acc) do acc end
+  defp bid(%{market: market}, orders, acc) do
+    {h, t} = Enum.split(orders, 100)
+    acc = acc ++ PeatioClient.bid(@api, market, h)
+    bid(%{market: market}, t, acc)
   end
 
   def to_ask_point(price, config) do

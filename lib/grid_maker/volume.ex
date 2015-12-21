@@ -63,7 +63,7 @@ defmodule GridMaker.Volume do
       #Decimal<231.00>
 
   """
-  def generate(unit_volume, unit_size, precision \\ 2) when is_integer(unit_size) do
+  def generate(unit_volume, unit_size, precision \\ 4) when is_integer(unit_size) do
     volume = D.mult(unit_volume, D.new(unit_size))
     seeds = for _ <- 1..unit_size, do: :random.uniform(1000)
     sum = seeds |> Enum.sum |> D.new
