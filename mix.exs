@@ -30,7 +30,7 @@ defmodule GridMaker.Mixfile do
   defp deps do
     [
       {:exrm, "~> 1.0.0-rc6"},
-      {:peatio_client, "1.2.4"}
+      {:peatio_client, "1.3.0"}
     ]
   end
 end

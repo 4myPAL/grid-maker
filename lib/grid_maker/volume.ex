@@ -85,8 +85,11 @@ defmodule GridMaker.Volume do
 
   """
   def sum([], acc) do acc end
-  def sum([h|t], acc \\ D.new(0)) do
+  def sum([h|t], acc) do
     sum(t, D.add(h, acc))
   end
+
+  def sum(volumes) when is_list(volumes) do sum(volumes, D.new(0)) end
+
 end
 

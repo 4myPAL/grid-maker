@@ -3,6 +3,7 @@ require Logger
 defmodule GridMaker.Worker do
   use GenServer
   alias Decimal, as: D
+  alias PeatioClient, as: API
 
   @api :api
   @bigger D.new(1) 
@@ -65,7 +66,7 @@ defmodule GridMaker.Worker do
                     "#{inspect List.last(ask)}"
         Logger.info "SUPPORT_INDEX #{inspect support}"
 
-        [last|_] = PeatioClient.trades(config.market)
+        [last|_] = API.trades(@api, config.market)
 
         {:noreply, %{config | 
             last: last, 
@@ -81,7 +82,7 @@ defmodule GridMaker.Worker do
   end
 
   def handle_info(:timeout, config) do
-    trades = PeatioClient.trades(config.market, config.last.id)
+    trades = API.trades(@api, config.market, config.last.id)
     support = find_support(trades, config)
 
     last = case trades do
@@ -131,7 +132,7 @@ defmodule GridMaker.Worker do
   end
 
   defp clean_history_orders do
-    PeatioClient.cancel_all @api
+    API.cancel_all @api
   end
 
   defp fill_padding(l, r, fill \\ :padding) do
@@ -172,12 +173,12 @@ defmodule GridMaker.Worker do
     {_, [bid_order|_]} = config.orders |> Enum.split(bid_point)
     {_, [ask_order|_]} = config.orders |> Enum.split(ask_point)
 
-    bid_point = case PeatioClient.order(@api, bid_order.id) do
+    bid_point = case API.order(@api, bid_order.id) do
       %{state: :wait} -> bid_point
       _ -> bid_point - 1
     end
 
-    ask_point = case PeatioClient.order(@api, ask_order.id) do
+    ask_point = case API.order(@api, ask_order.id) do
       %{state: :wait} -> ask_point
       _ -> ask_point + 1
     end
@@ -195,8 +196,8 @@ defmodule GridMaker.Worker do
 
   defp ask(_, [], acc) do acc end
   defp ask(%{market: market}, orders, acc) do
-    {h, t} = Enum.split(orders, 100)
-    acc = acc ++ PeatioClient.ask(@api, market, orders)
+    {_h, t} = Enum.split(orders, 100)
+    acc = acc ++ API.ask(@api, market, orders)
     ask(%{market: market}, t, acc)
   end
 
@@ -207,7 +208,7 @@ defmodule GridMaker.Worker do
   defp bid(_, [], acc) do acc end
   defp bid(%{market: market}, orders, acc) do
     {h, t} = Enum.split(orders, 100)
-    acc = acc ++ PeatioClient.bid(@api, market, h)
+    acc = acc ++ API.bid(@api, market, h)
     bid(%{market: market}, t, acc)
   end
 
