@@ -10,10 +10,10 @@ defmodule GridMaker do
 
     config = case get_env(:grid_maker, :grid, nil) do
       nil ->
-        %{volume: get_env(:grid_maker, :volume) |> String.to_integer,
+        %{volume: get_env(:grid_maker, :volume),
           scope: get_env(:grid_maker, :scope) |> String.to_integer,
-          unit: get_env(:grid_maker, :unit) |> String.to_float,
-          price: get_env(:grid_maker, :price) |> String.to_float,
+          unit: get_env(:grid_maker, :unit),
+          price: get_env(:grid_maker, :price),
           unit_size: get_env(:grid_maker, :unit_size) |> String.to_integer,
           market: get_env(:grid_maker, :market)
         }
