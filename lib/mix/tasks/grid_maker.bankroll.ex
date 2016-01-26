@@ -2,42 +2,52 @@ defmodule Mix.Tasks.GridMaker.Bankroll do
   use Mix.Task
   alias Decimal, as: D
 
+  @zero D.new(0)
+
   @shortdoc "Calculate grid bankroll"
 
   @moduledoc """
   Calculate grid trading bankroll.
       mix grid_maker.bankroll cells gap volume price
   """
-  def run([cells, gap, volume, price]) do
-    cells  = D.new(cells) |> D.div_int(D.new(2))
-    gap    = D.new gap
-    volume = D.new volume
-    price  = D.new price
+  def run(args = [min, max, gap, volume, price]) do
+    [min, max, gap, volume, price] = for n <- args, do: D.new(n)
 
-    cells_int = (cells |> D.to_string |> String.to_integer)
+    gap_count = 
+      D.sub(max, min)
+      |> D.div(gap)
+      |> D.round(0, :down)
+      |> D.to_string(:normal)
+      |> String.to_integer
 
-    min_price = price |> D.sub(D.mult(gap, cells))
-    max_price = price |> D.add(D.mult(gap, cells))
+    split_point =
+      price 
+      |> D.sub(min)
+      |> D.div(gap)
+      |> D.round(0, :down)
+      |> D.to_string(:normal)
+      |> String.to_integer
 
-    bid_bankroll = Enum.reduce cells_int..1, D.new(0), fn
-      (x, acc) ->
-        p = D.sub(price, D.mult(gap, D.new(x)))
-        b = D.mult(p, volume)
-        Mix.shell.info " - BID PRICE: #{p} VOLUME: #{volume} BANKROLL: #{b}"
-        D.add(acc, b)
+    Mix.shell.info "GAP #{gap} GAP_COUNT #{gap_count} SPLIT_POINT #{split_point} MIN #{min} MAX #{max}"
+    Mix.shell.info "---------------------------------------------------------------------"
+
+    grid = for n <- 1..gap_count do
+      price = n |> D.new |> D.mult(gap) |> D.add(min)
+      amount = price |> D.mult(volume)
+      cell = %{price: price, volume: volume, amount: amount, side: :bid }
+
+      if n > split_point, do: cell = %{cell | side: :ask}
+
+      cell
     end
 
-    Mix.shell.info " - ================================================================================="
+    bankroll = grid |> Enum.reduce(%{bid: @zero, ask: @zero}, fn
+      (%{side: :ask, volume: volume}, bankroll) ->
+        %{bankroll | ask: bankroll.ask |> D.add(volume)}
+      (%{side: :bid, amount: amount}, bankroll) ->
+        %{bankroll | bid: bankroll.bid |> D.add(amount)}
+    end)
 
-    ask_bankroll = Enum.reduce 1..cells_int, D.new(0), fn
-      (x, acc) ->
-        p = D.add(price, D.mult(gap, D.new(x)))
-        b = D.mult(p, volume)
-        Mix.shell.info " - ASK PRICE: #{p} VOLUME: #{volume} BANKROLL: #{b}"
-        D.add(acc, b)
-    end
-
-    Mix.shell.info "CELLS #{cells} GAP #{gap} VOLUME #{volume} price #{price} MIN #{min_price} MAX #{max_price}"
-    Mix.shell.info "BID #{bid_bankroll} ASK #{ask_bankroll} (V: #{D.mult(volume, cells)} #{D.mult(D.mult(volume, cells), price)})"
+    Mix.shell.info "BID_BANKROLL #{bankroll.bid} ASK_BANKROLL #{bankroll.ask} ASK_ASSET #{bankroll.ask |> D.mult(price)}"
   end
 end
