@@ -2,14 +2,19 @@ require Logger
 
 defmodule GridMaker.Worker do
   use GenServer
-  alias Decimal, as: D
+  alias Decimal,      as: D
   alias PeatioClient, as: API
 
   @api :api
-  @bigger D.new(1) 
+
+  @bigger  D.new(1) 
   @smaller D.new(-1) 
+
+  @zero  D.new(0)
   @equal D.new(0) 
-  @zero D.new(0)
+
+  @max_entry_orders 100
+  @refresh_interval 1000
 
   def tick(ticker) do
     GenServer.cast(__MODULE__, {:tick, ticker})
@@ -74,7 +79,7 @@ defmodule GridMaker.Worker do
             prices: prices,
             orders: orders, 
             support: support
-        }, 1000}
+        }, @refresh_interval}
       :out_of_range -> 
         Logger.error "LAST #{ticker.last} OUT OF SCOPE #{config.min} TO #{config.max}"
         {:noreply, %{ config | ticker: :error }}
@@ -96,7 +101,7 @@ defmodule GridMaker.Worker do
 
     case (support.bid + 1)..(support.ask - 1) do
       gap_bid..gap_ask when gap_bid > gap_ask ->
-        {:noreply, %{config | last: last}, 1000}
+        {:noreply, %{config | last: last}, @refresh_interval}
       gap ->
         prices  = fill_price gap, config
         volumes = GridMaker.Volume.fetch gap
@@ -118,7 +123,7 @@ defmodule GridMaker.Worker do
         support = %{ask: support.ask - ask_offset, bid: support.bid + bid_offset}
         Logger.info("NEW SUPPORT #{inspect support}")
 
-        {:noreply, %{config | last: last, orders: orders, support: support}, 1000}
+        {:noreply, %{config | last: last, orders: orders, support: support}, @refresh_interval}
     end
   end
 
@@ -196,7 +201,7 @@ defmodule GridMaker.Worker do
 
   defp ask(_, [], acc) do acc end
   defp ask(%{market: market}, orders, acc) do
-    {_h, t} = Enum.split(orders, 100)
+    {_h, t} = Enum.split(orders, @max_entry_orders)
     acc = acc ++ API.ask(@api, market, orders)
     ask(%{market: market}, t, acc)
   end
@@ -207,7 +212,7 @@ defmodule GridMaker.Worker do
 
   defp bid(_, [], acc) do acc end
   defp bid(%{market: market}, orders, acc) do
-    {h, t} = Enum.split(orders, 100)
+    {h, t} = Enum.split(orders, @max_entry_orders)
     acc = acc ++ API.bid(@api, market, h)
     bid(%{market: market}, t, acc)
   end
